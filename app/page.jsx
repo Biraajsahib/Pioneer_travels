@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 /* ─── DESIGN TOKENS ─── */
 const gold = "#A67C3C";
@@ -24,18 +24,15 @@ const FontStyle = () => (
     body { background: #F5F0E8; color: #1A1612; font-family: 'Manrope', sans-serif; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
     .serif { font-family: 'Cormorant Garamond', serif; }
 
-    /* FADE-UP */
     .fade-up { opacity: 0; transform: translateY(28px); transition: opacity 0.85s cubic-bezier(0.22,1,0.36,1), transform 0.85s cubic-bezier(0.22,1,0.36,1); }
     .fade-up.visible { opacity: 1; transform: translateY(0); }
     .stagger-1 { transition-delay: 0.1s !important; }
     .stagger-2 { transition-delay: 0.2s !important; }
     .stagger-3 { transition-delay: 0.3s !important; }
 
-    /* CARD HOVER */
     .card-hover { transition: background 0.4s ease, border-color 0.4s ease, transform 0.35s ease, box-shadow 0.35s ease; }
     .card-hover:hover { background: rgba(255,255,255,0.9) !important; border-color: rgba(166,124,60,0.35) !important; transform: translateY(-3px); box-shadow: 0 12px 40px rgba(160,120,60,0.1) !important; }
 
-    /* BUTTONS */
     .btn-gold {
       background: #A67C3C; color: #fff;
       font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 13px;
@@ -54,7 +51,6 @@ const FontStyle = () => (
     }
     .btn-outline:hover { border-color: #A67C3C; color: #A67C3C; background: rgba(166,124,60,0.05); }
 
-    /* NAV */
     .nav-link {
       background: none; border: none; font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 500;
       letter-spacing: 1.5px; text-transform: uppercase; color: rgba(26,22,18,0.55); cursor: pointer;
@@ -62,7 +58,6 @@ const FontStyle = () => (
     }
     .nav-link:hover { color: #A67C3C; }
 
-    /* HAMBURGER */
     .hamburger { display: none; }
     @media (max-width: 768px) {
       .hamburger { display: flex; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; z-index: 200; }
@@ -73,7 +68,6 @@ const FontStyle = () => (
       .desktop-nav { display: none !important; }
     }
 
-    /* MOBILE MENU */
     .mobile-menu {
       position: fixed; inset: 0; z-index: 150;
       background: rgba(245,240,232,0.98); backdrop-filter: blur(24px);
@@ -88,12 +82,10 @@ const FontStyle = () => (
     }
     .mobile-menu button:hover { color: #A67C3C; }
 
-    /* MISC */
     .tag { display: inline-block; font-family: 'Manrope', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #A67C3C; }
     .divider-gold { width: 36px; height: 1px; background: #A67C3C; margin: 0 auto; }
     .price-tag { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 500; color: #1A1612; line-height: 1; }
 
-    /* WHATSAPP */
     .whatsapp-btn {
       position: fixed; bottom: 24px; right: 24px; z-index: 300;
       width: 50px; height: 50px; border-radius: 50%; background: #25D366;
@@ -103,12 +95,10 @@ const FontStyle = () => (
     }
     .whatsapp-btn:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(37,211,102,0.45); }
 
-    /* STARS */
     .star { cursor: pointer; font-size: 22px; transition: color 0.2s; color: rgba(166,124,60,0.25); }
     .star.active { color: #A67C3C; }
     .star:hover { color: #C49A50; }
 
-    /* FORM INPUTS */
     .review-input {
       width: 100%; background: rgba(255,255,255,0.8); border: 1px solid rgba(160,140,110,0.25);
       border-radius: 10px; padding: 14px 16px; color: #1A1612;
@@ -118,7 +108,6 @@ const FontStyle = () => (
     .review-input:focus { border-color: rgba(166,124,60,0.5); box-shadow: 0 0 0 3px rgba(166,124,60,0.08); }
     .review-input::placeholder { color: rgba(26,22,18,0.3); }
 
-    /* DRIVER BOOKING FORM */
     .booking-input {
       width: 100%; background: rgba(255,255,255,0.8); border: 1px solid rgba(160,140,110,0.25);
       border-radius: 12px; padding: 15px 18px; color: #1A1612;
@@ -130,26 +119,21 @@ const FontStyle = () => (
     .booking-input::placeholder { color: rgba(26,22,18,0.3); }
     .booking-input option { background: #fff; color: #1A1612; }
 
-    /* SERVICE CARD */
     .service-card-btn { color: #1A1612 !important; }
     .service-card-btn * { color: inherit; }
 
-    /* ONWARDS */
     .onwards-link { cursor: pointer; transition: color 0.3s ease; }
     .onwards-link:hover { color: #A67C3C !important; }
 
-    /* ANIMATIONS */
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
     .float { animation: float 6s ease-in-out infinite; }
     @keyframes shimmer { 0%,100%{opacity:0.5} 50%{opacity:1} }
     .shimmer { animation: shimmer 3s ease-in-out infinite; }
 
-    /* SCROLLBAR */
     ::-webkit-scrollbar { width: 3px; }
     ::-webkit-scrollbar-track { background: #EDE8DC; }
     ::-webkit-scrollbar-thumb { background: #C4B090; border-radius: 2px; }
 
-    /* ── RESPONSIVE ── */
     .section-pad { padding: 90px 48px; }
     @media (max-width: 1024px) { .section-pad { padding: 70px 32px; } }
     @media (max-width: 768px)  { .section-pad { padding: 56px 20px; } }
@@ -190,7 +174,6 @@ const FontStyle = () => (
     .footer-links { display: flex; gap: 60px; flex-wrap: wrap; }
     @media (max-width: 600px) { .footer-links { gap: 32px; } }
 
-    /* Driver page tab */
     .driver-tab {
       padding: 10px 28px; border-radius: 100px; cursor: pointer;
       font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 600;
@@ -200,7 +183,6 @@ const FontStyle = () => (
     .driver-tab.active { background: #A67C3C; color: #fff; border-color: #A67C3C; }
     .driver-tab:hover:not(.active) { border-color: rgba(166,124,60,0.5); color: #A67C3C; }
 
-    /* Transmission toggle */
     .trans-btn {
       flex: 1; padding: 14px 10px; border-radius: 10px; cursor: pointer;
       font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 500;
@@ -210,18 +192,165 @@ const FontStyle = () => (
     .trans-btn.active { background: rgba(166,124,60,0.1); border-color: rgba(166,124,60,0.5); color: #A67C3C; }
     .trans-btn:hover:not(.active) { border-color: rgba(166,124,60,0.3); color: #5C5040; }
 
-    /* Input label */
     .field-label {
       display: block; font-size: 10px; font-weight: 600; letter-spacing: 2px;
       text-transform: uppercase; color: rgba(166,124,60,0.8); margin-bottom: 8px;
       font-family: 'Manrope', sans-serif;
     }
 
-    /* Success state */
     @keyframes popIn { 0%{transform:scale(0.8);opacity:0} 100%{transform:scale(1);opacity:1} }
     .pop-in { animation: popIn 0.4s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+    /* ── PLACES AUTOCOMPLETE ── */
+    .places-wrapper { position: relative; }
+    .places-dropdown {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 500;
+      background: #fff; border: 1px solid rgba(160,140,110,0.3);
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 8px 32px rgba(160,120,60,0.12);
+    }
+    .places-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 16px; cursor: pointer;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid rgba(160,140,110,0.1);
+      font-family: 'Manrope', sans-serif;
+    }
+    .places-item:last-child { border-bottom: none; }
+    .places-item:hover { background: rgba(166,124,60,0.06); }
+    .places-item-icon { color: #A67C3C; margin-top: 2px; flex-shrink: 0; font-size: 15px; }
+    .places-item-main { font-size: 14px; color: #1A1612; font-weight: 400; }
+    .places-item-sub { font-size: 12px; color: #8C7A62; margin-top: 2px; font-weight: 300; }
+    .places-loading { padding: 14px 16px; text-align: center; font-size: 13px; color: #8C7A62; font-family: 'Manrope', sans-serif; }
   `}</style>
 );
+
+/* ─── LOAD GOOGLE MAPS SCRIPT ─── */
+let gmapsLoaded = false;
+let gmapsCallbacks = [];
+function loadGoogleMaps(apiKey) {
+  if (gmapsLoaded || window.google?.maps?.places) { return Promise.resolve(); }
+  return new Promise((resolve) => {
+    gmapsCallbacks.push(resolve);
+    if (document.getElementById("gm-script")) return;
+    const script = document.createElement("script");
+    script.id = "gm-script";
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=__gmapsReady`;
+    script.async = true; script.defer = true;
+    window.__gmapsReady = () => {
+      gmapsLoaded = true;
+      gmapsCallbacks.forEach(cb => cb());
+      gmapsCallbacks = [];
+    };
+    document.head.appendChild(script);
+  });
+}
+
+/* ─── PLACES AUTOCOMPLETE HOOK ─── */
+function usePlacesAutocomplete(apiKey) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    loadGoogleMaps(apiKey).then(() => setReady(true));
+  }, [apiKey]);
+
+  const getSuggestions = useCallback((input, callback) => {
+    if (!ready || !window.google?.maps?.places || input.length < 2) { callback([]); return; }
+    const service = new window.google.maps.places.AutocompleteService();
+    service.getPlacePredictions(
+      { input, componentRestrictions: { country: "in" }, types: ["geocode", "establishment"] },
+      (predictions, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+          callback(predictions);
+        } else { callback([]); }
+      }
+    );
+  }, [ready]);
+
+  return { ready, getSuggestions };
+}
+
+/* ─── LOCATION INPUT COMPONENT ─── */
+const GOOGLE_MAPS_API_KEY = "AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY"; // Replace with actual key
+
+function LocationInput({ label, placeholder, value, onChange, error, apiKey }) {
+  const [query, setQuery] = useState(value || "");
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const { ready, getSuggestions } = usePlacesAutocomplete(apiKey);
+  const debounceRef = useRef(null);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleChange = (val) => {
+    setQuery(val);
+    onChange(val);
+    if (!val || val.length < 2) { setSuggestions([]); setOpen(false); return; }
+    setLoading(true); setOpen(true);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      getSuggestions(val, (results) => {
+        setSuggestions(results);
+        setLoading(false);
+      });
+    }, 300);
+  };
+
+  const handleSelect = (prediction) => {
+    const selected = prediction.description;
+    setQuery(selected);
+    onChange(selected);
+    setSuggestions([]); setOpen(false);
+  };
+
+  return (
+    <div>
+      <label className="field-label">{label}</label>
+      <div className="places-wrapper" ref={wrapperRef}>
+        <input
+          className="booking-input"
+          placeholder={placeholder}
+          value={query}
+          onChange={e => handleChange(e.target.value)}
+          onFocus={() => { if (suggestions.length > 0) setOpen(true); }}
+          autoComplete="off"
+          style={error ? { border: "1px solid rgba(192,57,43,0.5)" } : {}}
+        />
+        {open && (
+          <div className="places-dropdown">
+            {loading ? (
+              <div className="places-loading">Finding locations…</div>
+            ) : suggestions.length === 0 ? (
+              <div className="places-loading">No results found</div>
+            ) : (
+              suggestions.map((p) => (
+                <div key={p.place_id} className="places-item" onMouseDown={() => handleSelect(p)}>
+                  <span className="places-item-icon">📍</span>
+                  <div>
+                    <div className="places-item-main">{p.structured_formatting?.main_text || p.description}</div>
+                    {p.structured_formatting?.secondary_text && (
+                      <div className="places-item-sub">{p.structured_formatting.secondary_text}</div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+      {error && <span style={{ fontSize: "11px", color: "#c0392b", marginTop: "5px", display: "block" }}>{error}</span>}
+    </div>
+  );
+}
 
 /* ─── HOOKS ─── */
 function useFadeUp(threshold = 0.12) {
@@ -246,9 +375,77 @@ function loadReviews() {
 function saveReviews(r) { try { localStorage.setItem(REVIEWS_KEY, JSON.stringify(r)); } catch {} }
 
 /* ════════════════════════════════
+   HISTORY / NAVIGATION HOOK
+════════════════════════════════ */
+function usePageHistory(initialPage = "home") {
+  const [history, setHistory] = useState([initialPage]);
+  const [index, setIndex] = useState(0);
+
+  const page = history[index];
+
+  const navigate = useCallback((newPage) => {
+    if (newPage === history[index]) return;
+    setHistory(prev => {
+      const newHistory = prev.slice(0, index + 1);
+      return [...newHistory, newPage];
+    });
+    setIndex(prev => prev + 1);
+  }, [history, index]);
+
+  const canGoBack = index > 0;
+
+  const goBack = useCallback(() => {
+    if (canGoBack) setIndex(prev => prev - 1);
+  }, [canGoBack]);
+
+  // Browser back/forward keyboard shortcut (Alt+Left on Windows/Linux, Cmd+[ on Mac)
+  useEffect(() => {
+    const handleKeydown = (e) => {
+      // Alt+Left arrow or Backspace (when not in an input)
+      const inInput = ["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName);
+      if (e.altKey && e.key === "ArrowLeft" && !inInput) {
+        e.preventDefault();
+        if (index > 0) setIndex(prev => prev - 1);
+      }
+      if (e.altKey && e.key === "ArrowRight" && !inInput) {
+        e.preventDefault();
+        if (index < history.length - 1) setIndex(prev => prev + 1);
+      }
+    };
+    window.addEventListener("keydown", handleKeydown);
+    return () => window.removeEventListener("keydown", handleKeydown);
+  }, [index, history.length]);
+
+  // Touch/swipe back gesture for mobile
+  useEffect(() => {
+    let startX = 0; let startY = 0;
+    const onTouchStart = (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    };
+    const onTouchEnd = (e) => {
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = Math.abs(e.changedTouches[0].clientY - startY);
+      // Swipe right from left edge (within 60px of left edge) → go back
+      if (startX < 60 && dx > 80 && dy < 60) {
+        if (index > 0) setIndex(prev => prev - 1);
+      }
+    };
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [index]);
+
+  return { page, navigate, goBack, canGoBack };
+}
+
+/* ════════════════════════════════
    NAVBAR
 ════════════════════════════════ */
-function Navbar({ page, setPage }) {
+function Navbar({ page, setPage, goBack, canGoBack }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => {
@@ -274,14 +471,36 @@ function Navbar({ page, setPage }) {
         display: "flex", alignItems: "center", justifyContent: "space-between",
         height: "70px",
       }}>
-        <button onClick={() => go("home")} style={{
-          background: "none", border: "none", cursor: "pointer",
-          fontFamily: "'Manrope', sans-serif", fontWeight: 300,
-          fontSize: "clamp(12px,3vw,16px)", letterSpacing: "5px",
-          color: textPrimary, textTransform: "uppercase", whiteSpace: "nowrap",
-        }}>
-          PIONEER <span style={{ color: gold }}>TRAVELS</span>
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Back button — visible when not on home */}
+          {canGoBack && (
+            <button
+              onClick={goBack}
+              aria-label="Go back"
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                width: "34px", height: "34px", borderRadius: "50%",
+                color: textMuted, transition: "color 0.3s, background 0.3s",
+                marginRight: "2px",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = gold; e.currentTarget.style.background = "rgba(166,124,60,0.08)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = textMuted; e.currentTarget.style.background = "none"; }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5M12 5l-7 7 7 7"/>
+              </svg>
+            </button>
+          )}
+          <button onClick={() => go("home")} style={{
+            background: "none", border: "none", cursor: "pointer",
+            fontFamily: "'Manrope', sans-serif", fontWeight: 300,
+            fontSize: "clamp(12px,3vw,16px)", letterSpacing: "5px",
+            color: textPrimary, textTransform: "uppercase", whiteSpace: "nowrap",
+          }}>
+            PIONEER <span style={{ color: gold }}>TRAVELS</span>
+          </button>
+        </div>
         <nav className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: "28px" }}>
           {navItems.map(n => (
             <button key={n.key} className="nav-link" onClick={() => go(n.key)}
@@ -302,7 +521,7 @@ function Navbar({ page, setPage }) {
             {n.label}
           </button>
         ))}
-        <a href="tel:+919872130111" style={{ textDecoration: "none", marginTop: "8px" }}>
+        <a href="tel:+919917600079" style={{ textDecoration: "none", marginTop: "8px" }}>
           <span className="btn-gold" style={{ padding: "13px 32px", borderRadius: "100px", fontSize: "13px" }}>Call Now</span>
         </a>
       </div>
@@ -313,7 +532,7 @@ function Navbar({ page, setPage }) {
 /* ─── WHATSAPP ─── */
 function WhatsApp() {
   return (
-    <a href="https://wa.me/919872130111" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+    <a href="https://wa.me/919917600079" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
       <button className="whatsapp-btn" aria-label="WhatsApp">
         <svg viewBox="0 0 32 32" width="24" height="24" fill="white">
           <path d="M19.11 17.21c-.29-.14-1.7-.84-1.96-.94-.26-.1-.45-.14-.64.15-.19.29-.74.94-.91 1.13-.17.19-.33.22-.62.07-.29-.14-1.22-.45-2.32-1.44-.86-.77-1.44-1.72-1.61-2.01-.17-.29-.02-.45.13-.59.13-.13.29-.33.43-.5.14-.17.19-.29.29-.48.1-.19.05-.36-.02-.5-.07-.14-.64-1.55-.88-2.13-.23-.55-.47-.48-.64-.48h-.55c-.19 0-.5.07-.76.36-.26.29-1 1-1 2.44 0 1.44 1.04 2.82 1.19 3.02.14.19 2.04 3.11 4.95 4.36.69.3 1.24.47 1.66.6.7.22 1.34.19 1.84.11.56-.08 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.07-.11-.26-.18-.55-.33z"/>
@@ -446,12 +665,10 @@ function DriverPage() {
   const handleRequest = () => {
     if (!validate()) return;
     setSubmitted(true);
-    setTimeout(() => { window.open(`https://wa.me/919872130111?text=${buildWhatsAppMessage()}`, "_blank"); }, 600);
+    setTimeout(() => { window.open(`https://wa.me/919917600079?text=${buildWhatsAppMessage()}`, "_blank"); }, 600);
   };
 
-  const inputStyle = (field) => ({ border: errors[field] ? "1px solid rgba(192,57,43,0.5)" : "1px solid rgba(160,140,110,0.25)" });
-
-  const cardBg = { background: bgCard, border: `1px solid ${border}`, borderRadius: "28px", overflow: "hidden", boxShadow: "0 8px 40px rgba(160,120,60,0.08)" };
+  const cardBg = { background: bgCard, border: `1px solid ${border}`, borderRadius: "28px", overflow: "visible", boxShadow: "0 8px 40px rgba(160,120,60,0.08)" };
 
   if (submitted) {
     return (
@@ -463,7 +680,7 @@ function DriverPage() {
             Opening WhatsApp with your booking details. Our team will confirm pricing shortly.
           </p>
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="tel:+919872130111" style={{ textDecoration: "none" }}>
+            <a href="tel:+919917600079" style={{ textDecoration: "none" }}>
               <button className="btn-gold" style={{ padding: "13px 28px", borderRadius: "100px" }}>Call Us Instead</button>
             </a>
             <button className="btn-outline" onClick={() => setSubmitted(false)} style={{ padding: "13px 28px", borderRadius: "100px" }}>New Request</button>
@@ -475,12 +692,10 @@ function DriverPage() {
 
   return (
     <div style={{ paddingTop: "70px" }}>
-      {/* BOOKING FORM — TOP */}
       <section className="section-pad" style={{ background: bg }}>
         <div ref={r1} className="fade-up" style={{ maxWidth: "720px", margin: "0 auto" }}>
           <div style={cardBg}>
-            {/* CARD HEADER */}
-            <div style={{ padding: "28px 36px", borderBottom: `1px solid ${border}`, background: "rgba(166,124,60,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+            <div style={{ padding: "28px 36px", borderBottom: `1px solid ${border}`, background: "rgba(166,124,60,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", borderRadius: "28px 28px 0 0" }}>
               <h2 className="serif" style={{ fontSize: "26px", fontWeight: 400, color: textPrimary }}>Book a Driver</h2>
               <div style={{ display: "flex", gap: "8px" }}>
                 <button className={`driver-tab ${tripType === "oneway" ? "active" : ""}`} onClick={() => setTripType("oneway")}>One Way</button>
@@ -488,7 +703,6 @@ function DriverPage() {
               </div>
             </div>
 
-            {/* FORM BODY */}
             <div style={{ padding: "32px 36px", display: "flex", flexDirection: "column", gap: "24px" }}>
               {/* TRANSMISSION */}
               <div>
@@ -502,36 +716,44 @@ function DriverPage() {
               <div className="booking-grid">
                 <div>
                   <label className="field-label">Your Name</label>
-                  <input className="booking-input" placeholder="Full name" value={name} onChange={e => setName(e.target.value)} style={inputStyle("name")} />
+                  <input className="booking-input" placeholder="Full name" value={name} onChange={e => setName(e.target.value)} style={errors.name ? { border: "1px solid rgba(192,57,43,0.5)" } : {}} />
                   {errors.name && <span style={{ fontSize: "11px", color: "#c0392b", marginTop: "5px", display: "block" }}>{errors.name}</span>}
                 </div>
                 <div>
                   <label className="field-label">Phone Number</label>
-                  <input className="booking-input" placeholder="+91 XXXXX XXXXX" value={phone} type="tel" onChange={e => setPhone(e.target.value)} style={inputStyle("phone")} />
+                  <input className="booking-input" placeholder="+91 XXXXX XXXXX" value={phone} type="tel" onChange={e => setPhone(e.target.value)} style={errors.phone ? { border: "1px solid rgba(192,57,43,0.5)" } : {}} />
                   {errors.phone && <span style={{ fontSize: "11px", color: "#c0392b", marginTop: "5px", display: "block" }}>{errors.phone}</span>}
                 </div>
               </div>
-              {/* LOCATIONS */}
-              <div>
-                <label className="field-label">Pickup Location</label>
-                <input className="booking-input" placeholder="Enter pickup address or area" value={pickup} onChange={e => setPickup(e.target.value)} style={inputStyle("pickup")} />
-                {errors.pickup && <span style={{ fontSize: "11px", color: "#c0392b", marginTop: "5px", display: "block" }}>{errors.pickup}</span>}
-              </div>
-              <div>
-                <label className="field-label">Drop Location</label>
-                <input className="booking-input" placeholder="Enter drop address or area" value={drop} onChange={e => setDrop(e.target.value)} style={inputStyle("drop")} />
-                {errors.drop && <span style={{ fontSize: "11px", color: "#c0392b", marginTop: "5px", display: "block" }}>{errors.drop}</span>}
-              </div>
+
+              {/* LOCATION INPUTS WITH PLACES AUTOCOMPLETE */}
+              <LocationInput
+                label="Pickup Location"
+                placeholder="Enter pickup address or area"
+                value={pickup}
+                onChange={setPickup}
+                error={errors.pickup}
+                apiKey={GOOGLE_MAPS_API_KEY}
+              />
+              <LocationInput
+                label="Drop Location"
+                placeholder="Enter drop address or area"
+                value={drop}
+                onChange={setDrop}
+                error={errors.drop}
+                apiKey={GOOGLE_MAPS_API_KEY}
+              />
+
               {/* DATE / TIME */}
               <div>
                 <label className="field-label">{tripType === "roundtrip" ? "Pickup Date & Time" : "Date & Time"}</label>
                 <div className="booking-grid">
                   <div>
-                    <input className="booking-input" type="date" value={pickupDate} onChange={e => setPickupDate(e.target.value)} style={{ ...inputStyle("pickupDate"), colorScheme: "light" }} />
+                    <input className="booking-input" type="date" value={pickupDate} onChange={e => setPickupDate(e.target.value)} style={errors.pickupDate ? { border: "1px solid rgba(192,57,43,0.5)", colorScheme: "light" } : { colorScheme: "light" }} />
                     {errors.pickupDate && <span style={{ fontSize: "11px", color: "#c0392b", marginTop: "5px", display: "block" }}>{errors.pickupDate}</span>}
                   </div>
                   <div>
-                    <input className="booking-input" type="time" value={pickupTime} onChange={e => setPickupTime(e.target.value)} style={{ ...inputStyle("pickupTime"), colorScheme: "light" }} />
+                    <input className="booking-input" type="time" value={pickupTime} onChange={e => setPickupTime(e.target.value)} style={errors.pickupTime ? { border: "1px solid rgba(192,57,43,0.5)", colorScheme: "light" } : { colorScheme: "light" }} />
                     {errors.pickupTime && <span style={{ fontSize: "11px", color: "#c0392b", marginTop: "5px", display: "block" }}>{errors.pickupTime}</span>}
                   </div>
                 </div>
@@ -541,11 +763,11 @@ function DriverPage() {
                   <label className="field-label">Return Date & Time</label>
                   <div className="booking-grid">
                     <div>
-                      <input className="booking-input" type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} style={{ ...inputStyle("returnDate"), colorScheme: "light" }} />
+                      <input className="booking-input" type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} style={errors.returnDate ? { border: "1px solid rgba(192,57,43,0.5)", colorScheme: "light" } : { colorScheme: "light" }} />
                       {errors.returnDate && <span style={{ fontSize: "11px", color: "#c0392b", marginTop: "5px", display: "block" }}>{errors.returnDate}</span>}
                     </div>
                     <div>
-                      <input className="booking-input" type="time" value={returnTime} onChange={e => setReturnTime(e.target.value)} style={{ ...inputStyle("returnTime"), colorScheme: "light" }} />
+                      <input className="booking-input" type="time" value={returnTime} onChange={e => setReturnTime(e.target.value)} style={errors.returnTime ? { border: "1px solid rgba(192,57,43,0.5)", colorScheme: "light" } : { colorScheme: "light" }} />
                       {errors.returnTime && <span style={{ fontSize: "11px", color: "#c0392b", marginTop: "5px", display: "block" }}>{errors.returnTime}</span>}
                     </div>
                   </div>
@@ -565,15 +787,14 @@ function DriverPage() {
               <div style={{ textAlign: "center" }}>
                 <span style={{ fontSize: "12px", color: textMuted, letterSpacing: "1px" }}>OR</span>
               </div>
-              <a href="tel:+919872130111" style={{ textDecoration: "none" }}>
-                <button className="btn-outline" style={{ width: "100%", padding: "15px", borderRadius: "14px", fontSize: "13px" }}>Call +91 98721 30111</button>
+              <a href="tel:+919917600079" style={{ textDecoration: "none" }}>
+                <button className="btn-outline" style={{ width: "100%", padding: "15px", borderRadius: "14px", fontSize: "13px" }}>Call +91 99176 00079</button>
               </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS — BELOW */}
       <section className="section-pad" style={{ borderTop: `1px solid ${border}`, background: bgDark }}>
         <div ref={r2} className="fade-up" style={{ maxWidth: "1000px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "48px" }}>
@@ -598,7 +819,6 @@ function DriverPage() {
         </div>
       </section>
 
-      {/* PAGE INTRO — BOTTOM */}
       <section className="section-pad" style={{ borderTop: `1px solid ${border}`, textAlign: "center", background: bg }}>
         <div style={{ maxWidth: "600px", margin: "0 auto" }}>
           <div className="tag" style={{ marginBottom: "14px" }}>Pioneer Travels</div>
@@ -632,7 +852,6 @@ function HomePage({ setPage }) {
   ];
   return (
     <div>
-      {/* HERO */}
       <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070&auto=format&fit=crop')", backgroundSize: "cover", backgroundPosition: "center", filter: "brightness(0.35)" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(245,240,232,0.88) 40%, rgba(245,240,232,0.5) 100%)" }} />
@@ -664,7 +883,6 @@ function HomePage({ setPage }) {
                 ))}
               </div>
             </div>
-            {/* RIGHT CARD */}
             <div className="hero-right float" style={{ background: "rgba(255,255,255,0.75)", border: `1px solid ${border}`, borderRadius: "26px", padding: "36px", backdropFilter: "blur(20px)", boxShadow: "0 8px 40px rgba(160,120,60,0.1)" }}>
               <h3 className="serif" style={{ fontSize: "26px", fontWeight: 400, color: gold, marginBottom: "28px" }}>Our Services</h3>
               <div>
@@ -677,11 +895,11 @@ function HomePage({ setPage }) {
                 ))}
               </div>
               <div style={{ marginTop: "26px", display: "flex", gap: "10px" }}>
-                <a href="tel:+919872130111" style={{ textDecoration: "none", flex: 1 }}>
-                  <button className="btn-gold" style={{ width: "100%", padding: "12px", borderRadius: "10px", fontSize: "12px" }}>+91 98721 30111</button>
+                <a href="tel:+919917600079" style={{ textDecoration: "none", flex: 1 }}>
+                  <button className="btn-gold" style={{ width: "100%", padding: "12px", borderRadius: "10px", fontSize: "12px" }}>+91 99176 00079</button>
                 </a>
-                <a href="tel:+919814100111" style={{ textDecoration: "none", flex: 1 }}>
-                  <button className="btn-outline" style={{ width: "100%", padding: "12px", borderRadius: "10px", fontSize: "12px" }}>+91 98141 00111</button>
+                <a href="https://wa.me/919917600079" style={{ textDecoration: "none", flex: 1 }}>
+                  <button className="btn-outline" style={{ width: "100%", padding: "12px", borderRadius: "10px", fontSize: "12px" }}>WhatsApp</button>
                 </a>
               </div>
             </div>
@@ -694,7 +912,6 @@ function HomePage({ setPage }) {
         </div>
       </section>
 
-      {/* SERVICES */}
       <section className="section-pad" style={{ background: bgDark }}>
         <div ref={s2} className="fade-up" style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "52px" }}>
@@ -720,7 +937,6 @@ function HomePage({ setPage }) {
         </div>
       </section>
 
-      {/* RATES */}
       <section className="section-pad" style={{ background: bg, borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
         <div ref={s3} className="fade-up" style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "52px" }}>
@@ -765,7 +981,6 @@ function HomePage({ setPage }) {
 
       <ReviewsSection />
 
-      {/* CTA */}
       <section className="section-pad" style={{ textAlign: "center", background: bg }}>
         <div ref={s4} className="fade-up" style={{ maxWidth: "800px", margin: "0 auto" }}>
           <div className="tag" style={{ marginBottom: "18px" }}>Ready to Travel?</div>
@@ -774,10 +989,10 @@ function HomePage({ setPage }) {
           </h2>
           <p style={{ color: textSecondary, fontSize: "15px", lineHeight: "1.8", marginBottom: "38px", fontWeight: 300 }}>Call us directly for instant booking. Available 24/7.</p>
           <div style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="tel:+919872130111" style={{ textDecoration: "none" }}>
-              <button className="btn-gold" style={{ padding: "16px 40px", borderRadius: "100px" }}>Call +91 98721 30111</button>
+            <a href="tel:+919917600079" style={{ textDecoration: "none" }}>
+              <button className="btn-gold" style={{ padding: "16px 40px", borderRadius: "100px" }}>Call +91 99176 00079</button>
             </a>
-            <a href="https://wa.me/919872130111" style={{ textDecoration: "none" }}>
+            <a href="https://wa.me/919917600079" style={{ textDecoration: "none" }}>
               <button className="btn-outline" style={{ padding: "16px 40px", borderRadius: "100px" }}>WhatsApp Us</button>
             </a>
           </div>
@@ -966,8 +1181,8 @@ function ContactPage() {
         <div ref={r2} className="fade-up" style={{ maxWidth: "780px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "16px" }}>
           <div className="contact-grid">
             {[
-              { label: "Primary Line", number: "+91 98721 30111", href: "tel:+919872130111", primary: true },
-              { label: "Alternate Line", number: "+91 99176 00079", href: "tel:+919917600079", primary: false },
+              { label: "Primary Line", number: "+91 99176 00079", href: "tel:+919917600079", primary: true },
+              { label: "Alternate Line", number: "+91 98141 00111", href: "tel:+919814100111", primary: false },
             ].map(c => (
               <a key={c.label} href={c.href} style={{ textDecoration: "none" }}>
                 <div className="card-hover" style={{ padding: "30px 26px", background: bgCard, border: `1px solid ${border}`, borderRadius: "18px", cursor: "pointer", height: "100%", boxShadow: "0 4px 16px rgba(160,120,60,0.06)" }}>
@@ -981,13 +1196,13 @@ function ContactPage() {
               </a>
             ))}
           </div>
-          <a href="https://wa.me/919872130111" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+          <a href="https://wa.me/919917600079" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
             <div style={{ padding: "26px 30px", background: "rgba(37,211,102,0.07)", border: "1px solid rgba(37,211,102,0.25)", borderRadius: "18px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", flexWrap: "wrap", gap: "12px", transition: "background 0.3s", boxShadow: "0 4px 16px rgba(37,211,102,0.08)" }}
               onMouseEnter={e => e.currentTarget.style.background = "rgba(37,211,102,0.12)"}
               onMouseLeave={e => e.currentTarget.style.background = "rgba(37,211,102,0.07)"}>
               <div>
                 <div style={{ fontSize: "10px", letterSpacing: "2px", textTransform: "uppercase", color: "#1a9e4a", marginBottom: "6px" }}>WhatsApp</div>
-                <div className="serif" style={{ fontSize: "clamp(18px,3vw,24px)", color: textPrimary, fontWeight: 400 }}>+91 98721 30111</div>
+                <div className="serif" style={{ fontSize: "clamp(18px,3vw,24px)", color: textPrimary, fontWeight: 400 }}>+91 99176 00079</div>
                 <div style={{ fontSize: "12px", color: textMuted, marginTop: "3px" }}>Chat with us instantly</div>
               </div>
               <div style={{ background: "#25D366", width: "46px", height: "46px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -1034,13 +1249,10 @@ function Footer({ setPage }) {
             </div>
             <div>
               <div style={{ fontSize: "10px", letterSpacing: "2px", textTransform: "uppercase", color: gold, marginBottom: "16px" }}>Contact</div>
-              <a href="tel:+919872130111" style={{ textDecoration: "none" }}>
-                <div style={{ marginBottom: "10px", fontSize: "13px", color: textMuted, fontWeight: 300 }}>+91 98721 30111</div>
-              </a>
               <a href="tel:+919917600079" style={{ textDecoration: "none" }}>
                 <div style={{ marginBottom: "10px", fontSize: "13px", color: textMuted, fontWeight: 300 }}>+91 99176 00079</div>
               </a>
-              <a href="https://wa.me/919872130111" style={{ textDecoration: "none" }}>
+              <a href="https://wa.me/919917600079" style={{ textDecoration: "none" }}>
                 <div style={{ fontSize: "13px", color: "#1a9e4a", fontWeight: 300 }}>WhatsApp</div>
               </a>
             </div>
@@ -1059,19 +1271,24 @@ function Footer({ setPage }) {
    ROOT APP
 ════════════════════════════════ */
 export default function PioneerTravels() {
-  const [page, setPage] = useState("home");
+  const { page, navigate, goBack, canGoBack } = usePageHistory("home");
   const topRef = useRef(null);
-  const navigate = (p) => { setPage(p); setTimeout(() => topRef.current?.scrollIntoView({ behavior: "smooth" }), 30); };
+
+  const navigateAndScroll = (p) => {
+    navigate(p);
+    setTimeout(() => topRef.current?.scrollIntoView({ behavior: "smooth" }), 30);
+  };
+
   return (
     <div ref={topRef} style={{ background: bg, minHeight: "100vh", color: textPrimary, overflowX: "hidden" }}>
       <FontStyle />
-      <Navbar page={page} setPage={navigate} />
-      {page === "home"     && <HomePage setPage={navigate} />}
-      {page === "services" && <ServicesPage setPage={navigate} />}
+      <Navbar page={page} setPage={navigateAndScroll} goBack={goBack} canGoBack={canGoBack} />
+      {page === "home"     && <HomePage setPage={navigateAndScroll} />}
+      {page === "services" && <ServicesPage setPage={navigateAndScroll} />}
       {page === "driver"   && <DriverPage />}
-      {page === "fleet"    && <FleetPage setPage={navigate} />}
+      {page === "fleet"    && <FleetPage setPage={navigateAndScroll} />}
       {page === "contact"  && <ContactPage />}
-      <Footer setPage={navigate} />
+      <Footer setPage={navigateAndScroll} />
       <WhatsApp />
     </div>
   );
