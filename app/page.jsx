@@ -151,9 +151,6 @@ const FontStyle = () => (
     .fleet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 14px; }
     @media (max-width: 480px) { .fleet-grid { grid-template-columns: 1fr 1fr; } }
 
-    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-    @media (max-width: 600px) { .contact-grid { grid-template-columns: 1fr; } }
-
     .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); }
     @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
 
@@ -270,7 +267,7 @@ function usePlacesAutocomplete(apiKey) {
 }
 
 /* ─── LOCATION INPUT COMPONENT ─── */
-const GOOGLE_MAPS_API_KEY = "AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY"; // Replace with actual key
+const GOOGLE_MAPS_API_KEY = "AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY";
 
 function LocationInput({ label, placeholder, value, onChange, error, apiKey }) {
   const [query, setQuery] = useState(value || "");
@@ -398,10 +395,8 @@ function usePageHistory(initialPage = "home") {
     if (canGoBack) setIndex(prev => prev - 1);
   }, [canGoBack]);
 
-  // Browser back/forward keyboard shortcut (Alt+Left on Windows/Linux, Cmd+[ on Mac)
   useEffect(() => {
     const handleKeydown = (e) => {
-      // Alt+Left arrow or Backspace (when not in an input)
       const inInput = ["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName);
       if (e.altKey && e.key === "ArrowLeft" && !inInput) {
         e.preventDefault();
@@ -416,7 +411,6 @@ function usePageHistory(initialPage = "home") {
     return () => window.removeEventListener("keydown", handleKeydown);
   }, [index, history.length]);
 
-  // Touch/swipe back gesture for mobile
   useEffect(() => {
     let startX = 0; let startY = 0;
     const onTouchStart = (e) => {
@@ -426,7 +420,6 @@ function usePageHistory(initialPage = "home") {
     const onTouchEnd = (e) => {
       const dx = e.changedTouches[0].clientX - startX;
       const dy = Math.abs(e.changedTouches[0].clientY - startY);
-      // Swipe right from left edge (within 60px of left edge) → go back
       if (startX < 60 && dx > 80 && dy < 60) {
         if (index > 0) setIndex(prev => prev - 1);
       }
@@ -472,7 +465,6 @@ function Navbar({ page, setPage, goBack, canGoBack }) {
         height: "70px",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          {/* Back button — visible when not on home */}
           {canGoBack && (
             <button
               onClick={goBack}
@@ -704,7 +696,6 @@ function DriverPage() {
             </div>
 
             <div style={{ padding: "32px 36px", display: "flex", flexDirection: "column", gap: "24px" }}>
-              {/* TRANSMISSION */}
               <div>
                 <label className="field-label">Car Transmission</label>
                 <div style={{ display: "flex", gap: "10px" }}>
@@ -712,7 +703,6 @@ function DriverPage() {
                   <button className={`trans-btn ${transmission === "automatic" ? "active" : ""}`} onClick={() => setTransmission("automatic")}>◈ Automatic</button>
                 </div>
               </div>
-              {/* PERSONAL */}
               <div className="booking-grid">
                 <div>
                   <label className="field-label">Your Name</label>
@@ -726,7 +716,6 @@ function DriverPage() {
                 </div>
               </div>
 
-              {/* LOCATION INPUTS WITH PLACES AUTOCOMPLETE */}
               <LocationInput
                 label="Pickup Location"
                 placeholder="Enter pickup address or area"
@@ -744,7 +733,6 @@ function DriverPage() {
                 apiKey={GOOGLE_MAPS_API_KEY}
               />
 
-              {/* DATE / TIME */}
               <div>
                 <label className="field-label">{tripType === "roundtrip" ? "Pickup Date & Time" : "Date & Time"}</label>
                 <div className="booking-grid">
@@ -1163,7 +1151,7 @@ function FleetPage({ setPage }) {
 }
 
 /* ════════════════════════════════
-   CONTACT PAGE
+   CONTACT PAGE — single number only
 ════════════════════════════════ */
 function ContactPage() {
   const r1 = useFadeUp(); const r2 = useFadeUp();
@@ -1179,23 +1167,18 @@ function ContactPage() {
       </section>
       <section className="section-pad" style={{ background: bg }}>
         <div ref={r2} className="fade-up" style={{ maxWidth: "780px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div className="contact-grid">
-            {[
-              { label: "Primary Line", number: "+91 99176 00079", href: "tel:+919917600079", primary: true },
-              { label: "Alternate Line", number: "+91 98141 00111", href: "tel:+919814100111", primary: false },
-            ].map(c => (
-              <a key={c.label} href={c.href} style={{ textDecoration: "none" }}>
-                <div className="card-hover" style={{ padding: "30px 26px", background: bgCard, border: `1px solid ${border}`, borderRadius: "18px", cursor: "pointer", height: "100%", boxShadow: "0 4px 16px rgba(160,120,60,0.06)" }}>
-                  <div style={{ fontSize: "10px", letterSpacing: "2px", textTransform: "uppercase", color: gold, marginBottom: "12px" }}>{c.label}</div>
-                  <h3 className="serif" style={{ fontSize: "clamp(20px,3.5vw,26px)", fontWeight: 400, color: textPrimary, marginBottom: "5px" }}>{c.number}</h3>
-                  <p style={{ fontSize: "12px", color: textMuted }}>Tap to call directly</p>
-                  <div style={{ marginTop: "18px" }}>
-                    <span className={c.primary ? "btn-gold" : "btn-outline"} style={{ padding: "8px 20px", borderRadius: "100px", fontSize: "11px" }}>Call Now</span>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
+
+          {/* PRIMARY CALL CARD — full width */}
+          <a href="tel:+919917600079" style={{ textDecoration: "none" }}>
+            <div className="card-hover" style={{ padding: "36px 32px", background: bgCard, border: `1px solid ${borderGold}`, borderRadius: "18px", cursor: "pointer", boxShadow: "0 4px 16px rgba(160,120,60,0.08)" }}>
+              <div style={{ fontSize: "10px", letterSpacing: "2px", textTransform: "uppercase", color: gold, marginBottom: "12px" }}>Call Us</div>
+              <h3 className="serif" style={{ fontSize: "clamp(26px,4vw,36px)", fontWeight: 400, color: textPrimary, marginBottom: "5px" }}>+91 99176 00079</h3>
+              <p style={{ fontSize: "12px", color: textMuted, marginBottom: "22px" }}>Tap to call directly · Available 24/7</p>
+              <span className="btn-gold" style={{ padding: "10px 28px", borderRadius: "100px", fontSize: "12px" }}>Call Now</span>
+            </div>
+          </a>
+
+          {/* WHATSAPP CARD */}
           <a href="https://wa.me/919917600079" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
             <div style={{ padding: "26px 30px", background: "rgba(37,211,102,0.07)", border: "1px solid rgba(37,211,102,0.25)", borderRadius: "18px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", flexWrap: "wrap", gap: "12px", transition: "background 0.3s", boxShadow: "0 4px 16px rgba(37,211,102,0.08)" }}
               onMouseEnter={e => e.currentTarget.style.background = "rgba(37,211,102,0.12)"}
@@ -1213,6 +1196,7 @@ function ContactPage() {
               </div>
             </div>
           </a>
+
           <div style={{ textAlign: "center", padding: "34px", background: bgCard, border: `1px solid ${border}`, borderRadius: "18px", boxShadow: "0 4px 16px rgba(160,120,60,0.05)" }}>
             <p className="serif" style={{ fontSize: "22px", color: textPrimary, fontStyle: "italic", marginBottom: "8px" }}>Pioneer Travels</p>
             <p style={{ color: textMuted, fontSize: "13px", lineHeight: "1.8", fontWeight: 300 }}>Available 24 hours · 7 days a week<br />Chandigarh · Delhi · Pan North India</p>
