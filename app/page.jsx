@@ -222,65 +222,67 @@ const FontStyle = () => (
   `}</style>
 );
 
-/* ─── NOMINATIM LOCATION SEARCH (no API key, pincode + name support) ─── */
-const nominatimCache = {};
-
-async function searchNominatim(query) {
-  const q = query.trim();
-  if (nominatimCache[q]) return nominatimCache[q];
-
-  // Detect if query looks like a pincode (all digits, 5-6 chars)
-  const isPincode = /^\d{5,6}$/.test(q);
-  const params = new URLSearchParams({
-    format: "json",
-    addressdetails: "1",
-    limit: "7",
-    countrycodes: "in",
-    dedupe: "1",
-    ...(isPincode ? { postalcode: q } : { q: `${q}, India` }),
+/* ─── LOAD GOOGLE MAPS SCRIPT ─── */
+let gmapsLoaded = false;
+let gmapsCallbacks = [];
+function loadGoogleMaps(apiKey) {
+  if (gmapsLoaded || window.google?.maps?.places) { return Promise.resolve(); }
+  return new Promise((resolve) => {
+    gmapsCallbacks.push(resolve);
+    if (document.getElementById("gm-script")) return;
+    const script = document.createElement("script");
+    script.id = "gm-script";
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=__gmapsReady`;
+    script.async = true; script.defer = true;
+    window.__gmapsReady = () => {
+      gmapsLoaded = true;
+      gmapsCallbacks.forEach(cb => cb());
+      gmapsCallbacks = [];
+    };
+    document.head.appendChild(script);
   });
+}
 
-  const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
-    headers: { "Accept-Language": "en", "User-Agent": "PioneerTravels/1.0" },
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
+/* ─── PLACES AUTOCOMPLETE HOOK ─── */
+function usePlacesAutocomplete(apiKey) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    loadGoogleMaps(apiKey).then(() => setReady(true));
+  }, [apiKey]);
 
-  const results = data.map((item) => {
-    const a = item.address || {};
-    // Build a clean main label
-    const main =
-      a.amenity || a.tourism || a.shop || a.building ||
-      a.neighbourhood || a.suburb || a.village ||
-      a.town || a.city_district || a.city ||
-      item.name || q;
-    // Build secondary line
-    const parts = [
-      a.city || a.town || a.village || a.county,
-      a.state,
-      a.postcode,
-    ].filter(Boolean);
-    const secondary = parts.join(", ");
-    return { id: item.place_id, main, secondary, full: item.display_name };
-  });
+  const getSuggestions = useCallback((input, callback) => {
+    if (!ready || !window.google?.maps?.places || input.length < 2) { callback([]); return; }
+    const service = new window.google.maps.places.AutocompleteService();
+    service.getPlacePredictions(
+      { input, componentRestrictions: { country: "in" }, types: ["geocode", "establishment"] },
+      (predictions, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+          callback(predictions);
+        } else { callback([]); }
+      }
+    );
+  }, [ready]);
 
-  nominatimCache[q] = results;
-  return results;
+  return { ready, getSuggestions };
 }
 
 /* ─── LOCATION INPUT COMPONENT ─── */
-function LocationInput({ label, placeholder, value, onChange, error }) {
+const GOOGLE_MAPS_API_KEY = "AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY";
+
+function LocationInput({ label, placeholder, value, onChange, error, apiKey }) {
   const [query, setQuery] = useState(value || "");
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const { ready, getSuggestions } = usePlacesAutocomplete(apiKey);
   const debounceRef = useRef(null);
-  const abortRef = useRef(null);
   const wrapperRef = useRef(null);
 
   useEffect(() => {
     const handler = (e) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false);
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false);
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -289,26 +291,19 @@ function LocationInput({ label, placeholder, value, onChange, error }) {
   const handleChange = (val) => {
     setQuery(val);
     onChange(val);
-    clearTimeout(debounceRef.current);
-    if (!val || val.length < 2) { setSuggestions([]); setOpen(false); setLoading(false); return; }
+    if (!val || val.length < 2) { setSuggestions([]); setOpen(false); return; }
     setLoading(true); setOpen(true);
-    debounceRef.current = setTimeout(async () => {
-      // Cancel any previous in-flight request via abort controller
-      if (abortRef.current) abortRef.current.abort();
-      try {
-        const results = await searchNominatim(val);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      getSuggestions(val, (results) => {
         setSuggestions(results);
-      } catch (_) {
-        setSuggestions([]);
-      } finally {
         setLoading(false);
-      }
-    }, 180); // 180ms debounce — feels near-instant
+      });
+    }, 300);
   };
 
-  const handleSelect = (item) => {
-    // Use "main, secondary" as the display value for clarity
-    const selected = item.secondary ? `${item.main}, ${item.secondary}` : item.main;
+  const handleSelect = (prediction) => {
+    const selected = prediction.description;
     setQuery(selected);
     onChange(selected);
     setSuggestions([]); setOpen(false);
@@ -330,16 +325,18 @@ function LocationInput({ label, placeholder, value, onChange, error }) {
         {open && (
           <div className="places-dropdown">
             {loading ? (
-              <div className="places-loading">Searching…</div>
+              <div className="places-loading">Finding locations…</div>
             ) : suggestions.length === 0 ? (
-              <div className="places-loading">No results — try a different name or pincode</div>
+              <div className="places-loading">No results found</div>
             ) : (
-              suggestions.map((item) => (
-                <div key={item.id} className="places-item" onMouseDown={() => handleSelect(item)}>
+              suggestions.map((p) => (
+                <div key={p.place_id} className="places-item" onMouseDown={() => handleSelect(p)}>
                   <span className="places-item-icon">📍</span>
                   <div>
-                    <div className="places-item-main">{item.main}</div>
-                    {item.secondary && <div className="places-item-sub">{item.secondary}</div>}
+                    <div className="places-item-main">{p.structured_formatting?.main_text || p.description}</div>
+                    {p.structured_formatting?.secondary_text && (
+                      <div className="places-item-sub">{p.structured_formatting.secondary_text}</div>
+                    )}
                   </div>
                 </div>
               ))
